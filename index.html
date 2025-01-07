@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Et Qr Çözücü</title>
+    <title>QR Kod Çözücü</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
@@ -16,56 +16,58 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            gap: 15px; /* logo ile yazı arası boşluk */
+            gap: 15px;
         }
 
         .header img {
-            height: 140px; /* logo boyutu */
+            height: 140px;
             width: auto;
         }
 
         .header .school-name {
-        font-size: 32px;
-        font-weight: bold;
-        color: #333;
-        text-align: left;
-        
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-align: left;
+        }
+
         #startButton {
-        font-size: 24px; /* yazı boyutu büyütüldü */
-        display: none; /* Butonu gizle */
-        font-weight: bold; /* yazıyı kalın yapar */
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        text-transform: uppercase; /* tüm harfleri büyük yapar */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* gölge efekti */
-        transition: all 0.3s ease; /* hover efekti için yumuşak geçiş */
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin: 20px 0;
         }
 
         #startButton:hover {
-        background-color: #45a049; /* hover durumunda renk değişimi */
-        transform: scale(1.05); /* hover durumunda hafif büyüme */
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3); /* hover durumunda gölge artışı */
+            background-color: #45a049;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
 
         #reader {
             width: 100%;
             max-width: 380px;
-            max-height: 380px
+            height: 380px;
             margin: 0 auto;
-            display: block; /* reader'ı direkt görünür yap */
+            display: block;
         }
 
         #result {
-        display: none;
-        font-size: 48px;
-        font-color: red;
+            margin-top: 20px;
         }
 
         .decrypted {
-        font-size: 48px;
-        font-color: red;
+            font-size: 48px;
+            color: #ff0000;
+            margin: 20px 0;
         }
 
         .original {
@@ -77,52 +79,39 @@
         .error {
             color: #f44336;
             margin-top: 10px;
+            font-size: 18px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <div class="header">
         <img src="logo.png" alt="Okul Logo">
         <div class="school-name">Akyazı Cumhuriyet Ortaokulu</div>
-    </div><br>
-    <h2 color="red"><div id="result"></div></h2><br>
+    </div>
+    <div id="result"></div>
     <div id="reader"></div>
-    
 
- <script>
+    <script>
         let html5QrcodeScanner = null;
 
-        function decryptAES(encryptedText) {
+        function decryptCode(encryptedText) {
             try {
-                // Gelen metni sayıya çevir
                 let number = parseFloat(encryptedText);
                 
                 if (isNaN(number)) {
                     throw new Error("Geçerli bir sayı değil");
                 }
 
-                // 5'e böl
                 let step1 = number / 13;
-                
-              // İkinci karekök
                 let finalResult = Math.sqrt(step1);
-                
-                // Sonucu tam sayıya çevir
-                finalResult = Math.round(finalResult);
-                
-                return `
-                   ${finalResult}
-                `;
-                
+                return Math.round(finalResult);
             } catch (e) {
                 console.error("İşlem hatası:", e);
-                return "İşlem hatası: " + e.message;
+                throw new Error("İşlem hatası: " + e.message);
             }
         }
 
-        // Sayfa yüklendiğinde çalışacak
         window.onload = function() {
             startScanner();
         };
@@ -132,7 +121,7 @@
             const config = {
                 fps: 10,
                 qrbox: { width: 380, height: 380 },
-                aspectRatio: 0.5
+                aspectRatio: 1.0
             };
 
             Html5Qrcode.getCameras().then(devices => {
@@ -157,7 +146,7 @@
             resultElement.style.display = 'block';
             
             try {
-                const decryptedText = decryptAES(encryptedText);
+                const decryptedText = decryptCode(encryptedText);
                 
                 resultElement.innerHTML = `
                     <div class="decrypted">
@@ -172,7 +161,7 @@
             } catch (error) {
                 resultElement.innerHTML = `
                     <div class="error">
-                        İşlem hatası: ${error.message}
+                        ${error.message}
                     </div>
                     <div class="original">
                         <strong>Okunan Değer:</strong><br>
