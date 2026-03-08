@@ -1,10 +1,189 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; URL='https://qr.harunerceylan.com.tr/'">
-  <title>Yönlendiriliyor...</title>
+    <meta charset="UTF-8">
+    <title>H'apps Qr Kod</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .header img {
+            height: 140px;
+            width: auto;
+        }
+
+        .header .school-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-align: left;
+        }
+
+        #startButton {
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        #startButton:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        #reader {
+            width: 100%;
+            max-width: 380px;
+            height: 380px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        .decrypted {
+            font-size: 28px;
+            color: #ff0000;
+            margin: 20px 0;
+        }
+
+        .original {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
+    <div class="header">
+        <img src="logo.jpg" alt="Okul Logo">
+        <div class="school-name">H'apps Qr Kod</div>
+    </div>
+    <div id="result"></div>
+    <div id="reader"></div>
+
+    <script>
+        let html5QrcodeScanner = null;
+
+        function decryptCode(encryptedText) {
+            try {
+                let number = parseFloat(encryptedText);
+                
+                if (isNaN(number)) {
+                    throw new Error("Geçerli bir sayı değil");
+                }
+
+                // Günün tarihini DDMMYYYY formatında al
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const dateNumber = parseFloat(`${day}${month}${year}`);
+
+                // Tarihe böl, karekök al
+                let step1 = number / dateNumber;
+                let result = Math.sqrt(step1);
+                let rounded = Math.round(result);
+
+                // 6 haneye tamamla
+                let finalResult = String(rounded).padStart(6, '0');
+                return finalResult;
+
+            } catch (e) {
+                console.error("İşlem hatası:", e);
+                throw new Error("İşlem hatası: " + e.message);
+            }
+        }
+
+        window.onload = function() {
+            startScanner();
+        };
+
+        function startScanner() {
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = {
+                fps: 10,
+                qrbox: { width: 380, height: 380 },
+                aspectRatio: 1.0
+            };
+
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    html5QrcodeScanner.start(
+                        { facingMode: "environment" },
+                        config,
+                        onScanSuccess
+                    ).catch(err => {
+                        console.error("Kamera başlatma hatası:", err);
+                        alert("Kamera başlatılamadı. Lütfen kamera iznini kontrol edin.");
+                    });
+                }
+            }).catch(err => {
+                console.error("Kamera listesi alınamadı:", err);
+                alert("Kameralar listelenemiyor. Lütfen kamera iznini kontrol edin.");
+            });
+        }
+
+        function onScanSuccess(encryptedText) {
+            const resultElement = document.getElementById('result');
+            resultElement.style.display = 'block';
+            
+            try {
+                const decryptedText = decryptCode(encryptedText);
+                
+                resultElement.innerHTML = `
+                    <div class="decrypted">
+                        <strong>Kod: </strong>
+                        ${decryptedText}
+                    </div>
+                `;
+
+                // Başarılı tarama sesi
+                let audio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAeAAAgAABITExMTExMTGhoaGhoaGiEhISEhISEnJycnJycnLi4uLi4uLjQ0NDQ0NDQ7Ozs7Ozs7P////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYAAAAAAAAAIAAs/+MYxAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//MYxDsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//MYxHYAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//MYxLEAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+                audio.play();
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <div class="error">
+                        ${error.message}
+                    </div>
+                    <div class="original">
+                        <strong>Okunan Değer:</strong><br>
+                        ${encryptedText}
+                    </div>
+                `;
+            }
+        }
+    </script>
 </body>
 </html>
