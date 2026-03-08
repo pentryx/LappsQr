@@ -114,6 +114,12 @@
             margin-bottom: 10px;
         }
 
+        .modal-subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
         .modal-title {
             font-size: 18px;
             color: #555;
@@ -177,7 +183,8 @@
     <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box" id="modalBox">
-            <div class="modal-title" id="modalTitle">Oturum açmak için aşağıdaki kodu kullanın</div>
+            <div class="modal-icon" id="modalIcon">✅</div>
+            <div class="modal-subtitle" id="modalSubtitle">Oturum açmak için aşağıdaki kodu kullanın</div>
             <div class="modal-title" id="modalTitle">Okunan Kod</div>
             <div class="modal-code" id="modalCode">000000</div>
             <button class="modal-close-btn" onclick="closeModal()">Tamam</button>
@@ -219,20 +226,23 @@
         }
 
         function showModal(code, isError = false) {
-            const overlay = document.getElementById('modalOverlay');
-            const box     = document.getElementById('modalBox');
-            const icon    = document.getElementById('modalIcon');
-            const title   = document.getElementById('modalTitle');
-            const codeEl  = document.getElementById('modalCode');
+            const overlay   = document.getElementById('modalOverlay');
+            const box       = document.getElementById('modalBox');
+            const icon      = document.getElementById('modalIcon');
+            const subtitle  = document.getElementById('modalSubtitle');
+            const title     = document.getElementById('modalTitle');
+            const codeEl    = document.getElementById('modalCode');
 
             if (isError) {
                 box.className = 'modal-box modal-error';
                 icon.textContent = '❌';
+                subtitle.textContent = '';
                 title.textContent = 'Hata';
                 codeEl.textContent = code;
             } else {
                 box.className = 'modal-box';
                 icon.textContent = '✅';
+                subtitle.textContent = 'Oturum açmak için aşağıdaki kodu kullanın';
                 title.textContent = 'Okunan Kod';
                 codeEl.textContent = code;
             }
